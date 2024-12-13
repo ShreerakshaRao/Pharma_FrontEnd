@@ -6,6 +6,7 @@ import '../fonts/style.css';
 import Image from "next/image";
 import { useRouter, useSearchParams } from 'next/navigation';
 
+
 type Supplier = {
   supplierId: number;
   supplierName: string;
@@ -45,10 +46,10 @@ type StockItem = {
 const Purchase = () => {
 const router = useRouter();
 
-const Purchase_Save = "http://localhost:8080/pharma/stock/save";
-const Fetch_Supplier = "http://localhost:8080/pharma/supplier/getAll";
-const Fetch_Item = "http://localhost:8080/pharma/item/getAll";
-const Fetch_Item_ById = "http://localhost:8080/pharma/item/getById";
+const Purchase_Save = "http://localhost:8080/api/v1/pharma/stock/save";
+const Fetch_Supplier = "http://localhost:8080/api/v1/pharma/supplier/getAll";
+const Fetch_Item = "http://localhost:8080/api/v1/pharma/item/getAll";
+const Fetch_Item_ById = "http://localhost:8080/api/v1/pharma/item/getById";
 
 const searchParams = useSearchParams();
 const invId = searchParams.get("invId");
@@ -140,7 +141,7 @@ useEffect(() => {
   if (action === "editPurchase" && invId) {
     const fetchPurchaseData = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/pharma/stock/getById/${invId}`);
+        const response = await fetch(`http://localhost:8080/api/v1/pharma/stock/getById/${invId}`);
         if (!response.ok) {
           throw new Error("Error fetching purchase data");
         }
@@ -299,12 +300,44 @@ const addPurchase = async (e: { preventDefault: () => void }) => {
   // Debug: Log purchase and purchaseRows to ensure they have the correct data
   console.log("Purchase Data Before Saving: ", purchase);
   console.log("Purchase Rows: ", purchaseRows);
-
-  // Check if purchaseRows have valid data before sending
-  if (purchaseRows.some(row => !row.selectedItem || !row.packageQuantity)) {
-    alert("Please fill all required fields in the purchase rows.");
+  
+    // Validate parent purchase fields
+  if (!purchase.purchaseDate) {
+    alert("Please fill Purchase Date");
     return;
   }
+  if (!purchase.purchaseBillNo) {
+    alert("Please fill Purchase Bill Number");
+    return;
+  }
+  if (!purchase.creditPeriod) {
+    alert("Please fill Credit Period");
+    return;
+  }
+  if (!purchase.supplierId) {
+    alert("Please select a Supplier");
+    return;
+  }
+  if (!purchase.invoiceAmount) {
+    alert("Please fill Invoice Amount");
+    return;
+  }
+
+  // Check if purchaseRows have valid data before sending
+  if (purchaseRows.some(row => !row.selectedItem)) {
+    alert("Please select an Item");
+    return;
+  } else if (purchaseRows.some(row => !row.batchNo)) {
+    alert("Please fill Batch Number");
+    return;
+  } else if (purchaseRows.some(row => !row.packageQuantity)) {
+    alert("Please fill Package Quantity");
+    return;
+  } else if (purchaseRows.some(row => !row.expiryDate)) {
+    alert("Please fill Expiry Date");
+    return;
+  } 
+
 
     // Construct purchaseData object with both parent and child data
     const purchaseData = {
@@ -488,10 +521,7 @@ const updatePurchase = async () => {
 
     <div className='sub_heading_text'>Procured Items</div>
 
-    <div className='space-x-2'>
-           <label className='small_text'>Store</label>
-           <input type="text" name='store' id='store' className='procurement_input'/>
-      </div>
+    
 
       <div>
         <table className="purchase_table">
@@ -597,7 +627,7 @@ const updatePurchase = async () => {
 
         <div className="card_2_div">
           <label htmlFor="totalDiscount">DISCOUNT</label>
-          <input type="number" name="totalDiscount" id="totalDiscount" value={purchase.totalDiscount} readOnly className="card_2_input" />
+          <input type="text" name="totalDiscount" id="totalDiscount" value={purchase.totalDiscount} readOnly className="card_2_input" />
           </div>
 
         <div className="card_2_div bg-softPink rounded-md">

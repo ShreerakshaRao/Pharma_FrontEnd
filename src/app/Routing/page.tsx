@@ -4,10 +4,7 @@ import React, { Suspense } from "react";
 import Item from "../components/Item";
 import Supplier from "../components/Supplier";
 import { useSearchParams } from "next/navigation";
-import SupplierList from "../components/SupplierList";
-import ItemList from "../components/ItemList";
 import Purchase from "../components/Purchase";
-import PurchaseList from "../components/PurchaseList";
 import Navbar from "../components/Navbar";
 
 const PageContent = () => {

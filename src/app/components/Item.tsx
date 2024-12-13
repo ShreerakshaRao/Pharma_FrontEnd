@@ -15,7 +15,7 @@ interface Item {
   mrpSalePrice: string;
   purchasePricePerUnit: string;
   mrpSalePricePerUnit: string;
-  gst_percentage: string;
+  gstPercentage: string;
   hsnNo: string;
   consumables: boolean;
 
@@ -24,10 +24,10 @@ interface Item {
 const Item = () => {
     const router = useRouter();
 
-    const Item_Save = "http://localhost:8080/pharma/item/save";
-    const Item_Fetch = "http://localhost:8080/pharma/item/getById"; 
-    const Item_Delete = "http://localhost:8080/pharma/item/delete";
-    const Item_Update = "http://localhost:8080/pharma/item/update";
+    const Item_Save = "http://localhost:8080/api/v1/pharma/item/save";
+    const Item_Fetch = "http://localhost:8080/api/v1/pharma/item/getById"; 
+    const Item_Delete = "http://localhost:8080/api/v1/pharma/item/delete";
+    const Item_Update = "http://localhost:8080/api/v1/pharma/item/update";
     
     const searchParams = useSearchParams();
     const itemId = searchParams.get("itemId");
@@ -42,7 +42,7 @@ const Item = () => {
       mrpSalePrice: "",
       purchasePricePerUnit: "",
       mrpSalePricePerUnit: "",
-      gst_percentage: "",
+      gstPercentage: "",
       hsnNo: "",
       consumables: false,
     });
@@ -105,6 +105,46 @@ const Item = () => {
 
      const addItem = async (e: { preventDefault: () => void }) => {
       e.preventDefault();
+
+      if (!item.itemName) {
+        alert("Please fill Item Name");
+        return;
+      }
+      
+      if (!item.purchaseUnit) {
+        alert("Please fill Purchase Unit");
+        return;
+      }
+  
+      if (!item.unitType) {
+        alert("Please fill Unit Type");
+        return;
+      }
+  
+      if (!item.manufacturer) {
+        alert("Please fill Manufacturer");
+        return;
+      }
+      
+      if (!item.purchasePrice) {
+        alert("Please fill Purchase Price");
+        return;
+      }
+  
+      if (!item.mrpSalePrice) {
+        alert("Please fill MRP");
+        return;
+      }
+
+      if (!item.gstPercentage) {
+        alert("Please fill GST%");
+        return;
+      }
+  
+      if (!item.hsnNo) {
+        alert("Please fill HSN No.");
+        return;
+      }
 
          try {
         const response = await fetch(Item_Save, {
@@ -181,7 +221,10 @@ const Item = () => {
       }
     };
     
-    
+    const closeIcon = () => {
+      router.back();
+     };
+
   return (
     <div className="outer_card">
       <header className="supplier_item_header">
@@ -189,7 +232,7 @@ const Item = () => {
           <Image src="Tiameds_Logo.svg" alt="Logo" width={48} height={48} />
           <span className="text-2xl font-medium">Add New Item</span>
         </div>
-        <Image src="Close_Icon.svg" alt="Close Icon" width={24} height={24} />
+        <Image src="Close_Icon.svg" alt="Close Icon" width={24} height={24} onClick={closeIcon} className='cursor-pointer'/>
       </header>
 
       <main className="supplier_item_main">
@@ -244,8 +287,8 @@ const Item = () => {
         </div>
 
         <div className="inline-grid gap-1">
-          <label htmlFor="gst_percentage" >GST%</label>
-          <select name="gst_percentage" id="gst_percentage" value={item.gst_percentage} onChange={(e) => handleChange(e)} className="supplier_item_select" >
+          <label htmlFor="gstPercentage" >GST%</label>
+          <select name="gstPercentage" id="gstPercentage" value={item.gstPercentage} onChange={(e) => handleChange(e)} className="supplier_item_select" >
               <option value="">Select</option>
               <option value="5">5%</option>
               <option value="12">12%</option>
@@ -256,7 +299,7 @@ const Item = () => {
         </div>
 
         <div className="inline-grid gap-1">
-          <label htmlFor="hsnNo" >HSN No</label>
+          <label htmlFor="hsnNo" >HSN No.</label>
           <input type="text" name="hsnNo" id="hsnNo" value={item.hsnNo as string} onChange={(e) => handleChange(e)} placeholder="Enter here..." maxLength={20} className="supplier_item_input" />
         </div>
 

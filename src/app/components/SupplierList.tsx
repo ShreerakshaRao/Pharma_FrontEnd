@@ -16,7 +16,7 @@ interface Supplier {
 
 const SupplierList = () => {
     const router = useRouter();
-    const Fetch_Supplier = "http://localhost:8080/pharma/supplier/getAll";
+    const Fetch_Supplier = "http://localhost:8080/api/v1/pharma/supplier/getAll";
 
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [activeRow, setActiveRow] = useState<number | null>(null);

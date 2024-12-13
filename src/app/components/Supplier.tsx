@@ -10,10 +10,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 const Supplier = () => {
   const router = useRouter();
-  const Supplier_Save = "http://localhost:8080/pharma/supplier/save";
-  const Supplier_Fetch = "http://localhost:8080/pharma/supplier/getById"; 
-  const Supplier_Delete = "http://localhost:8080/pharma/supplier/delete";
-  const Supplier_Update = "http://localhost:8080/pharma/supplier/update";
+  const Supplier_Save = "http://localhost:8080/api/v1/pharma/supplier/save";
+  const Supplier_Fetch = "http://localhost:8080/api/v1/pharma/supplier/getById"; 
+  const Supplier_Delete = "http://localhost:8080/api/v1/pharma/supplier/delete";
+  const Supplier_Update = "http://localhost:8080/api/v1/pharma/supplier/update";
   
   const searchParams = useSearchParams();
   const supplierId = searchParams.get("supplierId");
@@ -55,6 +55,37 @@ const Supplier = () => {
 
    const addSupplier = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
+
+    if (!supplier.supplierName) {
+      alert("Please fill Supplier Name");
+      return;
+    }
+    
+    if (!supplier.supplierMobile) {
+      alert("Please fill Contact No.");
+      return;
+    }
+
+    if (!supplier.supplierGstinNo) {
+      alert("Please fill GSTIN No.");
+      return;
+    }
+
+    if (!supplier.supplierGstType) {
+      alert("Please fill GST Type");
+      return;
+    }
+    
+    if (!supplier.supplierEmail) {
+      alert("Please fill Email");
+      return;
+    }
+
+    if (!supplier.supplierAddress) {
+      alert("Please fill Address");
+      return;
+    }
+    
     try {
       const response = await fetch(Supplier_Save, {
         method: "POST",
@@ -67,12 +98,12 @@ const Supplier = () => {
       if (!response.ok) {
         throw new Error("Something went wrong");
       }
-      alert("Suplier Saved")
+      alert("Suplier added successfully")
       // window.location.reload();
       router.push(`/Routing?page=supplierList&highlight=Supplier`);
 
     } catch (error) {
-      console.log(error);
+      console.log(error); 
     }
   };
 
@@ -128,6 +159,9 @@ const Supplier = () => {
     }
   };
   
+  const closeIcon = () => {
+    router.back();
+   };
 
   return (
     <div className="outer_card">
@@ -136,7 +170,7 @@ const Supplier = () => {
           <Image src="Tiameds_Logo.svg" alt="Logo" width={48} height={48} />
           <span className="heading_text">Add New Supplier</span>
         </div>
-        <Image src="Close_Icon.svg" alt="Close Icon" width={24} height={24} />
+        <Image src="Close_Icon.svg" alt="Close Icon" width={24} height={24} onClick={closeIcon} className='cursor-pointer'/>
       </header>
 
       <main className="supplier_item_main">
@@ -149,12 +183,12 @@ const Supplier = () => {
           </div>
 
           <div className="inline-grid gap-1">
-            <label htmlFor="supplierMobile" >Contact No</label>
+            <label htmlFor="supplierMobile" >Contact No.</label>
             <input type="number" name="supplierMobile" id="supplierMobile" value={supplier.supplierMobile} onChange={onlyNumber} placeholder="Enter here..." className="supplier_item_input" />
           </div>
 
           <div className="inline-grid gap-1">
-            <label htmlFor="supplierGstinNo" >GSTIN</label>
+            <label htmlFor="supplierGstinNo" >GSTIN No.</label>
             <input type="text" name="supplierGstinNo" id="supplierGstinNo" value={supplier.supplierGstinNo} onChange={(e) => handleChange(e)} placeholder="Enter here..." maxLength={20} className="supplier_item_input" />
           </div>
 

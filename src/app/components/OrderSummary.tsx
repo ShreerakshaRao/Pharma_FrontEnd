@@ -72,11 +72,11 @@ const OrderSummary = () => {
 
 
   // const Fetch_Summary = `http://localhost:8080/pharma/stock/getById/${invId}`;
-  const Delete_Purchase = `http://localhost:8080/pharma/stock/delete/${invId}`;
+  const Delete_Purchase = `http://localhost:8080/api/v1/pharma/stock/delete/${invId}`;
   
   
   const fetchSupplier = async (supplierId: string) => {
-    const Fetch_Supplier = `http://localhost:8080/pharma/supplier/getById/${supplierId}`;
+    const Fetch_Supplier = `http://localhost:8080/api/v1/pharma/supplier/getById/${supplierId}`;
     try {
       const response = await fetch(Fetch_Supplier);
       if (!response.ok) {
@@ -92,7 +92,7 @@ const OrderSummary = () => {
   };
 
   const fetchItemDetails = async (itemId: number): Promise<ItemDetails | null> => {
-    const Fetch_Item = `http://localhost:8080/pharma/item/getById/${itemId}`;
+    const Fetch_Item = `http://localhost:8080/api/v1/pharma/item/getById/${itemId}`;
     try {
       const response = await fetch(Fetch_Item);
       if (!response.ok) {
@@ -112,7 +112,7 @@ const OrderSummary = () => {
   };
 
   useEffect(() => {
-    const Fetch_Summary = `http://localhost:8080/pharma/stock/getById/${invId}`;
+    const Fetch_Summary = `http://localhost:8080/api/v1/pharma/stock/getById/${invId}`;
     const fetchOrderData = async () => {
       if (!invId) {
         setError("Invalid Invoice ID.");
@@ -240,8 +240,8 @@ const OrderSummary = () => {
       <div>Invoice Date: <span className='medium_text2'>{new Date(orderData.purchaseDate).toLocaleDateString()}</span></div> 
       <div>Invoice No: <span className='medium_text2'>{orderData.purchaseBillNo}</span></div>
       <div>Payment Due Date: <span className='medium_text2'>{new Date(orderData.paymentDueDate).toLocaleDateString()}</span></div>
-      <div>GRN No:</div>
-      <div>GRN Date:</div>
+      {/* <div>GRN No:</div>
+      <div>GRN Date:</div> */}
       <div>Order Status: <span className='text-colorSuccess'>Order Received</span></div>
     </div>
 
@@ -319,7 +319,7 @@ const OrderSummary = () => {
 <div className="flex px-10">
 <footer className='ml-auto space-x-5'>
 
-      <button className='button'>Print</button>
+      {/* <button className='button'>Print</button> */}
       {action === "delete" && (
             <button className="button_red" onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? "Deleting..." : "Delete"}

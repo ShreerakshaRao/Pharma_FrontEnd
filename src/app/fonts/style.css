@@ -137,7 +137,7 @@ main{
 }
 
 .order_card{
-    @apply h-72 border rounded-2xl p-6 border-tableBorder space-y-4 text-base
+    @apply h-64 border rounded-2xl p-6 border-tableBorder space-y-4 text-base
 }
 
 .order_card1{

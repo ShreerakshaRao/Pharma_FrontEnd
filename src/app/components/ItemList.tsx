@@ -16,7 +16,7 @@ interface Item {
 
 const ItemList = () => {
   const router = useRouter();
-  const Fetch_Item = "http://localhost:8080/pharma/item/getAll";
+  const Fetch_Item = "http://localhost:8080/api/v1/pharma/item/getAll";
 
   const [items, setItems] = useState<Item[]>([]);
   const [activeRow, setActiveRow] = useState<number | null>(null);

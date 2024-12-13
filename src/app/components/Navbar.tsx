@@ -13,10 +13,10 @@ const Navbar = () => {
   const searchParams = useSearchParams();
 
   // const [showStocksMenu, setShowStocksMenu] = useState(false);
-  const [showPurchase, setShowPurchase] = useState(false);
   const [activePrimary, setActivePrimary] = useState<string | null>(null);
-  const [showSupplierList, setShowSupplierList] = useState(false);
-  const [showItemList, setShowItemList] = useState(false);
+  // const [showPurchase, setShowPurchase] = useState(false);
+  // const [showSupplierList, setShowSupplierList] = useState(false);
+  // const [showItemList, setShowItemList] = useState(false);
 
 
   // const [activeSecondary, setActiveSecondary] = useState<string | null>(null);
@@ -26,43 +26,50 @@ const Navbar = () => {
   //   setActivePrimary("Stocks"); 
   // };
 
-  useEffect(() => {
-    const highlight = searchParams.get("highlight");
-    if (highlight) {
-      setActivePrimary(highlight);
-      if (highlight === "Stock Purchase") setShowPurchase(true);
-      if (highlight === "Supplier") setShowSupplierList(true);
-      if (highlight === "Item") setShowItemList(true);
-    }
-  }, [searchParams]);
+  // useEffect(() => {
+  //   const highlight = searchParams.get("highlight");
+  //   if (highlight) {
+  //     setActivePrimary(highlight);
+  //     if (highlight === "Stock Purchase") setShowPurchase(true);
+  //     if (highlight === "Supplier") setShowSupplierList(true);
+  //     if (highlight === "Item") setShowItemList(true);
+  //   }
+  // }, [searchParams]);
 
-  const dropdownRouting = (subPath: string, secondary: string) => {
-    // setActiveSecondary(secondary); // Set the active secondary menu item
+  const dropdownRouting = (subPath: string) => {
     router.push(`/Routing?page=${subPath}`);
-  };
+};
+
+
 
   const purchaseList = () => {
-    setShowPurchase((prev: boolean) => !prev);
+    // setShowPurchase((prev: boolean) => !prev);
     setActivePrimary("Stock Purchase");
     router.push(`/Routing?page=purchaseList&highlight=Stock Purchase`);
 
   };
 
   const supplierList = () => {
-    setShowSupplierList((prev: boolean) => !prev);
+    // setShowSupplierList((prev: boolean) => !prev);
     setActivePrimary("Supplier");
     router.push(`/Routing?page=supplierList&highlight=Supplier`);
 
   };
 
   const itemList = () => {
-    setShowItemList((prev: boolean) => !prev);
+    // setShowItemList((prev: boolean) => !prev);
     setActivePrimary("Item");
     router.push(`/Routing?page=itemList&highlight=Item`);
 
   };
 
-
+  
+  useEffect(() => {
+    const highlight = searchParams.get("highlight");
+    if (highlight) {
+        setActivePrimary(highlight);
+    }
+}, [searchParams]);
   return (
     <>
       <div className="h-20 border-b border-tableBorder px-10 content-center">
@@ -77,7 +84,7 @@ const Navbar = () => {
           <li className={`relative group ${activePrimary === "Supplier" ? "underline decoration-[#4B0082]" : "" } cursor-pointer`} >
               <div className="cursor-pointer">Supplier</div>
               <ul className="navbar_dropdown">
-                <li className="dropdown_list cursor-pointer" onClick={() => dropdownRouting("addSupplier", "Supplier")} >Add Supplier</li>
+                <li className="dropdown_list cursor-pointer" onClick={() => dropdownRouting("addSupplier")} >Add Supplier</li>
                 <li className="dropdown_list cursor-pointer" onClick={supplierList} >Supplier List</li>
               </ul>
           </li>
@@ -85,7 +92,7 @@ const Navbar = () => {
           <li className={`relative group ${activePrimary === "Item" ? "underline decoration-[#4B0082]" : "" } cursor-pointer`} >
               <div className="cursor-pointer">Item</div>
               <ul className="navbar_dropdown">
-                <li className="dropdown_list cursor-pointer" onClick={() => dropdownRouting("addItem", "Item")}> Add Item</li>
+                <li className="dropdown_list cursor-pointer" onClick={() => dropdownRouting("addItem")}> Add Item</li>
                 <li className="dropdown_list cursor-pointer"  onClick={itemList}>  Item List</li>
               </ul>
           </li>
@@ -203,6 +210,8 @@ const Navbar = () => {
       {activePrimary === "Supplier" && <SupplierList />}
       {activePrimary === "Item" && <ItemList />}
     </>
+
+    
   );
 };
 

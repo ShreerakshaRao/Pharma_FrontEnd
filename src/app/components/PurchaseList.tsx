@@ -28,7 +28,7 @@ interface Supplier {
 
 const PurchaseList = () => {
   const router = useRouter();
-  const Fetch_Purchase = "http://localhost:8080/pharma/stock/getAll";
+  const Fetch_Purchase = "http://localhost:8080/api/v1/pharma/stock/getAll";
 
   const [purchases, setPurchases] = useState<purchase[]>([]);
   const [activeRow, setActiveRow] = useState<number | null>(null);
@@ -38,7 +38,7 @@ const PurchaseList = () => {
   
   // Function to fetch supplier data by supplierId
   const fetchSupplier = async (supplierId: string): Promise<string> => {
-    const Fetch_Supplier = `http://localhost:8080/pharma/supplier/getById/${supplierId}`;
+    const Fetch_Supplier = `http://localhost:8080/api/v1/pharma/supplier/getById/${supplierId}`;
     try {
       const response = await fetch(Fetch_Supplier);
       if (!response.ok) {
@@ -104,21 +104,9 @@ const PurchaseList = () => {
     setActiveRow((prev) => (prev === invId ? null : invId)); 
   };
   
-    // const handleDelete = (invId: number) => {
-    //   router.push(`/DeleteView?invId=${invId}&action=delete`); 
-    // };
-  
-    // const handleView = (invId: number) => {
-    //   router.push(`/DeleteView?invId=${invId}&action=view`); 
-    // };
-  
     // const handleEdit = (invId: number) => {
-    //   router.push(`/Routing?invId=${invId}&action=editPurchase`); 
-    // }; 
-
-    const handleEdit = (invId: number) => {
-      router.push(`/Routing?invId=${invId}&action=editPurchase&searchQuery=${searchQuery}&activeRow=${activeRow}`);
-    };
+    //   router.push(`/Routing?invId=${invId}&action=editPurchase&searchQuery=${searchQuery}&activeRow=${activeRow}`);
+    // };
   
     const handleDelete = (invId: number) => {
       router.push(`/DeleteView?invId=${invId}&action=delete&searchQuery=${searchQuery}&activeRow=${activeRow}`);
@@ -143,12 +131,11 @@ const PurchaseList = () => {
 
           <div className='search'>
             <div className='space-x-4'>
-                {/* <input type="text" name='search' className="bg-[url('/Search_Icon.svg')] bg-no-repeat input_search" placeholder='Search Here...' /> */}
                 <input type="text" name='search' className="input_search" placeholder='Search table...' value={searchQuery} onChange={handleSearch}/>
-                <button className='button_filter'>Filter</button>
+                {/* <button className='button_filter'>Filter</button> */}
             </div>
             <div>
-               <button className='button_log' onClick={newProcurement}>Log New Procurement</button>
+               <button className='button_log' onClick={newProcurement}> Log New Procurement</button>
             </div>
           </div>
 
@@ -185,9 +172,8 @@ const PurchaseList = () => {
                 <div style={{ position: "absolute", top: "20px", left: "0", backgroundColor: "white", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
                   padding: "8px", borderRadius: "4px", zIndex: 1000, }} >
             
-                  {/* <div style={{ padding: "5px", cursor: "pointer" }} > Edit </div> */}
-
-                  <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleEdit(purchase.invId)} > Edit  </div>
+                 
+                  {/* <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleEdit(purchase.invId)} > Edit  </div> */}
 
                   <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleView(purchase.invId)} > View </div>   
 
