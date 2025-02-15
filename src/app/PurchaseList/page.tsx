@@ -4,6 +4,10 @@ import React, { useEffect, useState } from 'react'
 import '../fonts/style.css'; 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation'
+import { getPurchase } from '@/services/purchaseService';
+import { toast } from 'react-toastify';
+import LogNewProcurement from '../LogNewProcurement/page';
+import { getSupplierById } from '@/services/supplierService';
 
 
 interface purchase {
@@ -18,63 +22,63 @@ interface purchase {
   supplierName?: string;
 }
 
-interface Supplier {
-  supplierName: string;
-  // supplierMobile: string;
-  // supplierEmail: string;
-  // supplierAddress: string;
-}
-
 
 const PurchaseList = () => {
   const router = useRouter();
-  const Fetch_Purchase = "http://localhost:8080/api/v1/pharma/stock/getAll";
 
   const [purchases, setPurchases] = useState<purchase[]>([]);
   const [activeRow, setActiveRow] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState(""); // Added state for search query
+  const [showProcurementForm, setShowProcurementForm] = useState(false); // New state for form visibility
 
 
-  
-  // Function to fetch supplier data by supplierId
   const fetchSupplier = async (supplierId: string): Promise<string> => {
-    const Fetch_Supplier = `http://localhost:8080/api/v1/pharma/supplier/getById/${supplierId}`;
     try {
-      const response = await fetch(Fetch_Supplier);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch supplier. Status: ${response.status}`);
-      }
-      const data: Supplier = await response.json();
-      return data.supplierName;
+      const supplier = await getSupplierById(Number(supplierId)); // Convert supplierId to number
+      return supplier.supplierName;
     } catch (error) {
       console.error("Error fetching supplier:", error);
       return "Unknown Supplier"; // Default value in case of failure
     }
   };
+  
 
-  // Fetch purchases and supplier names
-  useEffect(() => {
-    const fetchPurchasesWithSuppliers = async () => {
-      try {
-        const response = await fetch(Fetch_Purchase);
-        const data: purchase[] = await response.json();
-
-        // Fetch supplier names for each purchase
-        const purchasesWithSuppliers = await Promise.all(
-          data.map(async (purchase) => {
-            const supplierName = await fetchSupplier(purchase.supplierId);
-            return { ...purchase, supplierName };
-          })
-        );
-
-        setPurchases(purchasesWithSuppliers);
-      } catch (error) {
-        console.error("Error fetching purchases:", error);
+  
+// Fetch purchases and supplier names through service
+useEffect(() => {
+  const fetchPurchasesWithSuppliers = async () => {
+    try {
+      const response = await getPurchase();
+      console.log(response,"response");
+      
+      if (response?.status !== 'success') {
+        throw new Error(response?.message || 'Failed to fetch purchases');
       }
-    };
 
-    fetchPurchasesWithSuppliers();
-  }, []);
+      const purchases: purchase[] = response.data;
+
+      // Fetch supplier names for each purchase
+      const purchasesWithSuppliers = await Promise.all(
+        purchases.map(async (purchase) => {
+          const supplierName = await fetchSupplier(purchase.supplierId);
+          return { ...purchase, supplierName };
+        })
+      );
+
+      setPurchases(purchasesWithSuppliers); // Update state with enriched data
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("An unknown error occurred");
+      }
+    } finally {
+    }
+  };
+
+  fetchPurchasesWithSuppliers();
+}, []);
+
 
   // Restore state from query parameters
   useEffect(() => {
@@ -100,14 +104,6 @@ const PurchaseList = () => {
       new Date(purchase.purchaseDate).toLocaleDateString().includes(searchQuery)
   );
   
-  const handleIconClick = (invId: number | null) => {
-    setActiveRow((prev) => (prev === invId ? null : invId)); 
-  };
-  
-    // const handleEdit = (invId: number) => {
-    //   router.push(`/Routing?invId=${invId}&action=editPurchase&searchQuery=${searchQuery}&activeRow=${activeRow}`);
-    // };
-  
     const handleDelete = (invId: number) => {
       router.push(`/DeleteView?invId=${invId}&action=delete&searchQuery=${searchQuery}&activeRow=${activeRow}`);
     };
@@ -117,12 +113,13 @@ const PurchaseList = () => {
     };
 
     const newProcurement = () => {
-      router.push('/LogNewProcurement'); 
+      // router.push('/LogNewProcurement'); 
+      setShowProcurementForm(true);
     };
 
   return (
     <>
-
+{!showProcurementForm ? 
     
     <main>
           <span className='heading_text'>
@@ -166,22 +163,16 @@ const PurchaseList = () => {
             <td className='text-colorSuccess'>{purchase.goodStatus}</td>
             
             <td>
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <Image src="Action_Icon.svg" alt="Action Icon" width={16} height={16} onClick={() => handleIconClick(purchase.invId)} style={{ cursor: "pointer" }} />
-                {activeRow === purchase.invId && (
-                <div style={{ position: "absolute", top: "20px", left: "0", backgroundColor: "white", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-                  padding: "8px", borderRadius: "4px", zIndex: 1000, }} >
             
-                 
-                  {/* <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleEdit(purchase.invId)} > Edit  </div> */}
-
-                  <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleView(purchase.invId)} > View </div>   
-
-                  <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleDelete(purchase.invId)} > Delete  </div>
- 
-               </div>
-              )}
-            </div>
+          <ul className="flex gap-10 content-center items-center text-lg font-light">
+          <li className={`relative group cursor-pointer`} >
+              <div className="group-hover:hidden"><Image src="Action_Icon.svg" alt="Action Icon" width={16} height={16}/></div>
+              <ul className="navbar_dropdown">
+                <li className="dropdown_list cursor-pointer" onClick={() => handleView(purchase.invId)}> View</li>
+                <li className="dropdown_list cursor-pointer" onClick={() => handleDelete(purchase.invId)}> Delete</li>
+              </ul>
+          </li>
+          </ul>            
           </td>
           </tr>
         ))}
@@ -190,8 +181,12 @@ const PurchaseList = () => {
 
       </div>
     </main>
-    
-    
+   : '' }
+    <main>
+    {showProcurementForm && (
+                <LogNewProcurement />
+      )}
+    </main>
     </>
   )
 }

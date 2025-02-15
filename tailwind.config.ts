@@ -1,4 +1,4 @@
-import { table } from "console";
+
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -36,6 +36,8 @@ const config: Config = {
         '32': '32rem',
         '38': '38rem',
         '25': '25rem',
+        '42': '42.5rem',
+        '50': '50rem',
 
       },
       height: {

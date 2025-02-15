@@ -2,9 +2,11 @@
 
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react'
-import Navbar from './Navbar'
 import '../fonts/style.css'; 
 import { useRouter, useSearchParams } from 'next/navigation'
+import { getPurchaseById, stockDelete } from '@/services/purchaseService';
+import { getSupplierById } from '@/services/supplierService';
+import { getItemById } from '@/services/itemService';
 
 interface Item {
   itemId: number;
@@ -70,63 +72,58 @@ const OrderSummary = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [supplier, setSupplier] = useState<Supplier | null>(null);
 
-
-  // const Fetch_Summary = `http://localhost:8080/pharma/stock/getById/${invId}`;
-  const Delete_Purchase = `http://localhost:8080/api/v1/pharma/stock/delete/${invId}`;
   
-  
-  const fetchSupplier = async (supplierId: string) => {
-    const Fetch_Supplier = `http://localhost:8080/api/v1/pharma/supplier/getById/${supplierId}`;
+  const fetchSupplier = async (supplierId: number) => {
     try {
-      const response = await fetch(Fetch_Supplier);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch supplier. Status: ${response.status}`);
-      }
-      const data: Supplier = await response.json();
-      setSupplier(data);
-      setError(null);
+        const data: Supplier = await getSupplierById(supplierId); // Using the service function
+        setSupplier(data);
+        setError(null);
     } catch (error) {
-      console.error("Error fetching supplier:", error);
-      setError("Failed to fetch supplier details.");
+        console.error("Error fetching supplier:", error);
+        setError("Failed to fetch supplier details.");
     }
-  };
+};
+
 
   const fetchItemDetails = async (itemId: number): Promise<ItemDetails | null> => {
-    const Fetch_Item = `http://localhost:8080/api/v1/pharma/item/getById/${itemId}`;
     try {
-      const response = await fetch(Fetch_Item);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch item details. Status: ${response.status}`);
-      }
-      const data = await response.json();
-      return {
-        itemName: data.itemName || "N/A",
-        purchasePrice: data.purchasePrice || 0,
-        mrpSalePrice: data.mrpSalePrice || 0,
-        // gstAmount: data.gstAmount || 0,
-      };
-    } catch (error) {
-      console.error("Error fetching item details:", error);
-      return null;
-    }
-  };
+        const data = await getItemById(itemId); // Using the service function
 
+        return {
+            itemName: data.itemName || "N/A",
+            purchasePrice: data.purchasePrice || 0,
+            mrpSalePrice: data.mrpSalePrice || 0,
+            // gstAmount: data.gstAmount || 0,
+        };
+    } catch (error) {
+        console.error("Error fetching item details:", error);
+        return null;
+    }
+};
+
+
+ 
   useEffect(() => {
-    const Fetch_Summary = `http://localhost:8080/api/v1/pharma/stock/getById/${invId}`;
     const fetchOrderData = async () => {
       if (!invId) {
         setError("Invalid Invoice ID.");
         return;
       }
-
+  
       try {
-        const response = await fetch(Fetch_Summary);
-        if (!response.ok) throw new Error(`Failed to fetch order data. Status: ${response.status}`);
-        const data = await response.json();
-
-        console.log("Fetched Data:", data); // Debug API response
-
-        // Transform API response to match expected structure
+        // Fetch data from API
+        const apiResponse = await getPurchaseById(Number(invId));
+        console.log("API Response:", apiResponse);
+  
+        // Check if the response contains data and stockItemDtos
+        const data = apiResponse.data;
+        if (!data || !Array.isArray(data.stockItemDtos)) {
+          setError("No stock items found for this invoice.");
+          setOrderData(null);
+          return;
+        }
+  
+        // Map and transform stock items
         const transformedData: OrderSummary = {
           purchaseDate: data.purchaseDate || "",
           purchaseBillNo: data.purchaseBillNo || "",
@@ -135,7 +132,7 @@ const OrderSummary = () => {
           grnDate: data.grnDate || "N/A",
           orderStatus: "Pending",
           items: await Promise.all(
-            data.stockItems.map(async (item: StockItem) => {
+            data.stockItemDtos.map(async (item: StockItem) => {
               const itemDetails = await fetchItemDetails(item.itemId);
               return {
                 itemId: item.itemId,
@@ -144,7 +141,7 @@ const OrderSummary = () => {
                 expiryDate: item.expiryDate || "N/A",
                 gstAmount: item.gstAmount || 0,
                 amount: item.amount || 0,
-                ...itemDetails, // Add fetched item details
+                ...itemDetails,
               };
             })
           ),
@@ -154,26 +151,32 @@ const OrderSummary = () => {
           grandTotal: data.grandTotal || 0,
           supplierId: data.supplierId || "",
         };
-
-        setOrderData(transformedData); // Set the transformed data
+  
+        // Update state with transformed data
+        setOrderData(transformedData);
         setError(null);
-
-        // Fetch supplier details
+  
+        // Fetch supplier details if supplierId exists
         if (data.supplierId) {
           fetchSupplier(data.supplierId);
- 
         }
       } catch (error: unknown) {
+        console.error("Error fetching order data:", error);
         if (error instanceof Error) {
           setError(error.message);
         } else {
           setError("An unknown error occurred.");
         }
+        setOrderData(null);
       }
     };
-
+  
     fetchOrderData();
   }, [invId]);
+  
+  
+  
+  
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -185,31 +188,59 @@ const OrderSummary = () => {
   
   
 
+  // const handleDelete = async () => {
+  //   if (!invId) {
+  //     alert("Invalid Invoice ID. Cannot delete.");
+  //     return;
+  //   }
+
+  //   if (!window.confirm("Are you sure you want to delete this order?")) {
+  //     return; // User cancelled the action
+  //   }
+
+  //   try {
+  //     setIsDeleting(true);
+  //     const response = await fetch(Delete_Purchase, {
+  //       method: "DELETE",
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to delete order. Status: ${response.status}`);
+  //     }
+
+  //     alert("Order deleted successfully.");
+  //     setIsDeleting(false);
+  //     router.back();
+
+  //   } catch (error: unknown) {
+  //     if (error instanceof Error) {
+  //       setError(error.message);
+  //     } else {
+  //       setError("An unknown error occurred.");
+  //     }
+  //     setIsDeleting(false);
+  //   }
+  // };
+
+
   const handleDelete = async () => {
     if (!invId) {
       alert("Invalid Invoice ID. Cannot delete.");
       return;
     }
-
+  
     if (!window.confirm("Are you sure you want to delete this order?")) {
       return; // User cancelled the action
     }
-
+  
     try {
       setIsDeleting(true);
-      const response = await fetch(Delete_Purchase, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete order. Status: ${response.status}`);
-      }
-
+      await stockDelete(Number(invId)); // Using the service function
+  
       alert("Order deleted successfully.");
       setIsDeleting(false);
-      router.push(`/Routing?page=purchaseList&highlight=Stock Purchase`);
-
-
+      router.back(); // Navigate back
+  
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);
@@ -219,15 +250,13 @@ const OrderSummary = () => {
       setIsDeleting(false);
     }
   };
+  
 
   const backPage = () => {
-    router.push(`/Routing?page=purchaseList&highlight=Stock Purchase`);
+    router.back()
   };
   return (
     <>
-    
-<Navbar/>
-
 <main className='space-y-10'>
   <div className='order_part1'>
     <div className='order_card1'>

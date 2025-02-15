@@ -1,11 +1,20 @@
 .navbar_dropdown{
-    @apply hidden group-hover:flex absolute top-full left-0 bg-white shadow-lg rounded-lg text-sm border border-gray-200 flex-col whitespace-nowrap
+    @apply hidden group-hover:flex absolute top-full left-2 bg-white shadow-lg rounded-lg text-sm border border-gray-200 flex-col whitespace-nowrap
 }
 
 .dropdown_list{
-    @apply px-4 py-2 hover:bg-gray-100 cursor-pointer
+    @apply px-4 py-2 hover:bg-buttonPurple hover:text-white cursor-pointer rounded-lg 
 }
 
+/* .navbar_dropdown {
+    @apply hidden group-hover:flex absolute top-full left-[-20px] bg-white shadow-lg rounded-lg text-sm border border-gray-200 flex-col whitespace-nowrap;
+  }
+  
+  .dropdown_list {
+    @apply px-4 py-2 hover:bg-gray-100 cursor-pointer;
+  }
+
+   */
 .supplier_item_input{
     @apply h-11 w-72 p-2 rounded-lg focus:ring-2 focus:ring-inputBorder focus:border-transparent outline-none
 }
@@ -19,7 +28,7 @@
 }
 
 .outer_card{
-    @apply mx-16 my-24 rounded-3xl border bg-customWhite p-10 space-y-6 h-auto w-auto
+    @apply rounded-3xl border bg-customWhite p-10 space-y-6 
 }
 
 .supplier_item_header{
@@ -34,13 +43,16 @@
     @apply w-36 h-11 bg-buttonGray rounded-md text-gray-200 text-sm font-medium hover:bg-buttonPurple
 }
 
+.purple_button{
+    @apply w-36 h-11 bg-buttonPurple rounded-md text-gray-200 text-sm font-medium}
+
 .heading_text{
     @apply font-medium text-2xl
     
 }
 
 main{
-    @apply px-10 py-6 space-y-5
+    @apply px-10 py-6 space-y-5 
 
 }
 
@@ -62,7 +74,14 @@ main{
 
 .medium_text2{
     @apply text-base font-light
+    
 }
+
+.medium_text3{
+    @apply text-base font-normal
+}
+
+
 .procurement_input{
     @apply h-11 w-80 border rounded-lg border-textField focus:ring-2 focus:ring-inputBorder focus:border-transparent outline-none
 }
@@ -154,4 +173,8 @@ main{
 
 .order_card2_div{
     @apply ml-auto font-bold
+}
+
+.dropdown_styling{
+    @apply text-buttonPurple font-semibold
 }

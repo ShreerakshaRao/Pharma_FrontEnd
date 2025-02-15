@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import '../fonts/style.css'; 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Modal from './Modal';
+import Supplier from '../Supplier/Supplier';
+import { getSupplier } from '@/services/supplierService';
 
 interface Supplier {
     supplierId: number; 
@@ -15,25 +17,34 @@ interface Supplier {
 }
 
 const SupplierList = () => {
-    const router = useRouter();
-    const Fetch_Supplier = "http://localhost:8080/api/v1/pharma/supplier/getAll";
 
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-    const [activeRow, setActiveRow] = useState<number | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedSupplierId, setSelectedSupplierId] = useState<number | null>(null);
+    const [modalAction, setModalAction] = useState<string | null>(null);
 
+   
+    const openModal = (supplierId: number, action: string) => {
+      setIsModalOpen(true);
+      setSelectedSupplierId(supplierId); // Set the supplierId being edited
+      setModalAction(action); // Store the action (like 'supplierEdit')
+    };
+      
+    const closeModal = () => {
+      setIsModalOpen(false);
+      setSelectedSupplierId(null);
+    };
 
     const fetchSuppliers = async (): Promise<Supplier[]> => {
-        try {
-          const response = await fetch(Fetch_Supplier); 
-          if (!response.ok) {
-            throw new Error('Failed to fetch suppliers');
-          }
-          return response.json();
-        } catch (error) {
-          console.error(error);
-          return [];
-        }
-      };
+      try {
+        const suppliers = await getSupplier();
+        return suppliers;
+      } catch (error) {
+        console.error("Error fetching suppliers:", error);
+        return [];
+      }
+    };
+    
     
     useEffect(() => {
         const loadSuppliers = async () => {
@@ -42,18 +53,6 @@ const SupplierList = () => {
         };
         loadSuppliers();
       }, []);
-
-      const iconClick = (supplierId: number | null) => {
-        setActiveRow((prev) => (prev === supplierId ? null : supplierId)); 
-      };
-      
-        const handleDelete = (supplierId: number) => {
-          router.push(`/Routing?supplierId=${supplierId}&page=supplierDelete`); 
-        };
-      
-        const handleView = (supplierId: number) => {
-          router.push(`/Routing?supplierId=${supplierId}&page=supplierEdit`); 
-        };
 
     return (
       <>
@@ -73,6 +72,7 @@ const SupplierList = () => {
                   <td className="rounded-tr-lg rounded-br-lg">
                     <Image src="Action_Icon2.svg" alt="Action Icon" width={16} height={16} />
                   </td>
+
                 </tr>
               </thead>
               <tbody>
@@ -85,23 +85,16 @@ const SupplierList = () => {
                       <td>{supplier.supplierGstType}</td>
                       <td>{supplier.supplierGstinNo}</td>
                       
-                      <td>
-            <div style={{ position: "relative", display: "inline-block" }}>
-              <Image src="Action_Icon.svg" alt="Action Icon" width={16} height={16} onClick={() => iconClick(supplier.supplierId)} style={{ cursor: "pointer" }} />
-                {activeRow === supplier.supplierId && (
-                <div style={{ position: "absolute", top: "20px", left: "0", backgroundColor: "white", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-                  padding: "8px", borderRadius: "4px", zIndex: 1000, }} >
-            
-                  {/* <div style={{ padding: "5px", cursor: "pointer" }} > Edit </div> */}
-
-                  <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleView(supplier.supplierId)} > Edit </div>  
-
-                  <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleDelete(supplier.supplierId)} > Delete  </div>
-                 
-                   
-               </div>
-              )}
-            </div>
+          <td>
+          <ul className="flex gap-10 content-center items-center text-lg font-light">
+          <li className={`relative group cursor-pointer`} >
+              <div className="group-hover:hidden"><Image src="Action_Icon.svg" alt="Action Icon" width={16} height={16}/></div>
+              <ul className="navbar_dropdown">
+                <li className="dropdown_list cursor-pointer" onClick={() => openModal(supplier.supplierId, "supplierEdit")}> Edit</li>
+                <li className="dropdown_list cursor-pointer" onClick={() => openModal(supplier.supplierId, "supplierDelete")} > Delete</li>
+              </ul>
+          </li>
+          </ul>
           </td>
                     </tr>
                   ))
@@ -115,7 +108,13 @@ const SupplierList = () => {
               </tbody>
             </table>
           </div>
+
+      <Modal isOpen={isModalOpen} closeModal={closeModal}>
+        <Supplier closeModal={closeModal} supplierId={selectedSupplierId} action={modalAction}/>
+      </Modal>
         </main>
+
+
       </>
     );
 };

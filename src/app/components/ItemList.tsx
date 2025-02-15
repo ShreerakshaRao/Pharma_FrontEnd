@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import '../fonts/style.css'; 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Modal from './Modal';
+import Item from '../Item/Item';
+import { getItem } from '@/services/itemService';
 
-interface Item {
+interface Item1 {
   itemId: number; 
   itemName: string;
   purchasePrice: number;
@@ -15,25 +17,46 @@ interface Item {
 }
 
 const ItemList = () => {
-  const router = useRouter();
-  const Fetch_Item = "http://localhost:8080/api/v1/pharma/item/getAll";
 
-  const [items, setItems] = useState<Item[]>([]);
-  const [activeRow, setActiveRow] = useState<number | null>(null);
+  const [items, setItems] = useState<Item1[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<number>(0);
+  const [modalAction, setModalAction] = useState<string>();
+  
+  const openModal = (itemId: number, action: string) => {
+    setIsModalOpen(true);
+    setSelectedItemId(itemId); // Set the supplierId being edited
+    setModalAction(action); // Store the action (like 'supplierEdit')
+  };
+    
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedItemId(0);
+  };
 
 
-  const fetchItems = async (): Promise<Item[]> => {
-      try {
-        const response = await fetch(Fetch_Item); 
-        if (!response.ok) {
-          throw new Error('Failed to fetch items');
-        }
-        return response.json();
-      } catch (error) {
-        console.error(error);
-        return [];
-      }
-    };
+  // const fetchItems = async (): Promise<Item1[]> => {
+  //     try {
+  //       const response = await fetch(Fetch_Item); 
+  //       if (!response.ok) {
+  //         throw new Error('Failed to fetch items');
+  //       }
+  //       return response.json();
+  //     } catch (error) {
+  //       console.error(error);
+  //       return [];
+  //     }
+  //   };
+
+  const fetchItems = async (): Promise<Item1[]> => {
+    try {
+      const items = await getItem();
+      return items;
+    } catch (error) {
+      console.error("Error fetching items:", error);
+      return [];
+    }
+  };
   
   useEffect(() => {
       const loadItems = async () => {
@@ -43,17 +66,6 @@ const ItemList = () => {
       loadItems();
     }, []);
 
-    const iconClick = (itemId: number | null) => {
-      setActiveRow((prev) => (prev === itemId ? null : itemId)); 
-    };
-    
-      const handleDelete = (itemId: number) => {
-        router.push(`/Routing?itemId=${itemId}&page=itemDelete`); 
-      };
-    
-      const handleView = (itemId: number) => {
-        router.push(`/Routing?itemId=${itemId}&page=itemEdit`); 
-      };
 
   return (
     <>
@@ -86,22 +98,15 @@ const ItemList = () => {
                   <td>{item.hsnNo}</td>
                   
                   <td>
-        <div style={{ position: "relative", display: "inline-block" }}>
-          <Image src="Action_Icon.svg" alt="Action Icon" width={16} height={16} onClick={() => iconClick(item.itemId)} style={{ cursor: "pointer" }} />
-            {activeRow === item.itemId && (
-            <div style={{ position: "absolute", top: "20px", left: "0", backgroundColor: "white", boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.2)",
-              padding: "8px", borderRadius: "4px", zIndex: 1000, }} >
-        
-              {/* <div style={{ padding: "5px", cursor: "pointer" }} > Edit </div> */}
-
-              <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleView(item.itemId)} > Edit </div> 
-
-              <div style={{ padding: "5px", cursor: "pointer" }} onClick={() => handleDelete(item.itemId)} > Delete  </div>
-             
-                 
-           </div>
-          )}
-        </div>
+              <ul className="flex gap-10 content-center items-center text-lg font-light">
+                  <li className={`relative group cursor-pointer`} >
+                      <div className="group-hover:hidden"><Image src="Action_Icon.svg" alt="Action Icon" width={16} height={16}/></div>
+                      <ul className="navbar_dropdown">
+                        <li className="dropdown_list cursor-pointer" onClick={() => openModal(item.itemId, "itemEdit")}> Edit</li>
+                        <li className="dropdown_list cursor-pointer" onClick={() => openModal(item.itemId, "itemDelete")} > Delete</li>
+                      </ul>
+                  </li>
+              </ul>
       </td>
                 </tr>
               ))
@@ -115,6 +120,12 @@ const ItemList = () => {
           </tbody>
         </table>
       </div>
+
+      <Modal isOpen={isModalOpen} closeModal={closeModal}>
+        <Item closeModal={closeModal} itemId={selectedItemId} action={modalAction}/>
+      </Modal>
+
+      
     </main>
   </>
   )
